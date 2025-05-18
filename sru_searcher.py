@@ -6,15 +6,37 @@ import itertools
 import os
 import re
 
-# inputs from user
-campus_code = 'campus_code'
-input_file = ".\\data\\book_circles.csv"
+
+
+#
+# CONFIGURATION 
+
+# put your campus Alma code, e.g., 01CALS_USM
+campus_code = 'SOME_CODE'
+# put your network zone code e.g., 01CALS_NETWORK
+network_code = '01CALS_NETWORK'
+
+# your input file - must be CSV UTF-8
+input_file = "SOMEFILE.csv"
+
+# END CONFIGURATION
+#
+
+
+
+
+sru_iz_url = 'https://csu-csusm.alma.exlibrisgroup.com/view/sru/' + campus_code
+sru_nz_url = 'https://csu-network.alma.exlibrisgroup.com/view/sru/' + network_code
+
+
+# your input file must have a column called ISBN where each row has an ISBN
 search_index = "isbn".upper()
 delimiter = "; "
 
-# initialize SRU clients
-iz = SruClient('https://iz_url')
-nz = SruClient('https://nz_url')
+
+iz = SruClient(sru_iz_url)
+nz = SruClient(sru_nz_url)
+
 
 # turn input file into list
 with open(input_file, 'r', encoding="utf-8") as f:
@@ -58,16 +80,16 @@ def main():
             # add results to row
             row.extend((print_holdings_statement, electronic_holdings_statement))
             
-        # console output
-        print(print_holdings_statement)
-        print(electronic_holdings_statement)
-        print("------------------------------------")
-        sys.stdout.flush()
+            # console output
+            print(print_holdings_statement)
+            print(electronic_holdings_statement)
+            print("------------------------------------")
+            sys.stdout.flush()
         
-    # write to output and open
-    with open("output.csv", "w", encoding="utf-8", newline='') as f:
-        writer = csv.writer(f)
-        writer.writerows(rows)
+            # write to output and open
+            with open("output.csv", "w", encoding="utf-8", newline='') as f:
+                writer = csv.writer(f)
+                writer.writerows(rows)
 
     os.system('output.csv')
 
@@ -118,12 +140,13 @@ def generate_electronic_holdings_statement(electronic_holdings):
     electronic_holdings_statements = []
     for holding in electronic_holdings:
         platform = holding.get('m', '')
+        access_note = holding.get('n', '')
         range = holding.get('s', None)
         
         if range:
             holding_statement = f"{platform} ({range})"
         else:
-            holding_statement = f"{platform}"
+            holding_statement = f"{platform} {access_note}"
         
         electronic_holdings_statements.append(holding_statement)
     
